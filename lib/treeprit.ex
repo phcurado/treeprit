@@ -3,18 +3,19 @@ defmodule Treeprit do
   Documentation for `Treeprit`.
   """
 
-  # @type operation :: {:ok, map()} | {:error, any()}
-
   @type t :: %__MODULE__{
-    total_operations: integer(),
-    skipped_operations: integer(),
-    successful_operations: integer(),
-    failed_operations: integer(),
-    operations: map()
-  }
+          total_operations: integer(),
+          skipped_operations: integer(),
+          successful_operations: integer(),
+          failed_operations: integer(),
+          operations: map()
+        }
 
-  defstruct total_operations: 0, skipped_operations: 0, successful_operations: 0, failed_operations: 0, operations: %{}
-
+  defstruct total_operations: 0,
+            skipped_operations: 0,
+            successful_operations: 0,
+            failed_operations: 0,
+            operations: %{}
 
   @doc """
   Create the treeprit struct.
@@ -43,12 +44,13 @@ defmodule Treeprit do
 
   """
   def run(treeprit, name, func) when is_atom(name) and is_function(func) do
-    treeprit = try do
-      result = func.(treeprit.operations)
-      successful_result(treeprit, name, result)
-    rescue
-      error -> failed_result(treeprit, name, inspect(error))
-    end
+    treeprit =
+      try do
+        result = func.(treeprit.operations)
+        successful_result(treeprit, name, result)
+      rescue
+        error -> failed_result(treeprit, name, error)
+      end
 
     treeprit
     |> increment_total_operations()
