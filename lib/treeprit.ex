@@ -8,14 +8,16 @@ defmodule Treeprit do
           skipped_operations: integer(),
           successful_operations: integer(),
           failed_operations: integer(),
-          operations: map()
+          operations: map(),
+          errors: map()
         }
 
   defstruct total_operations: 0,
             skipped_operations: 0,
             successful_operations: 0,
             failed_operations: 0,
-            operations: %{}
+            operations: %{},
+            errors: %{}
 
   @doc """
   Create the treeprit struct.
@@ -33,10 +35,10 @@ defmodule Treeprit do
 
   ## Examples
 
-      iex> Treeprit.new() |> Treeprit.run(:add_val, fn _ -> %{val: "my value"} end)
+      iex> Treeprit.new() |> Treeprit.run(:add_val, fn _ -> {:ok, "my value"} end)
       %Treeprit{
         failed_operations: 0,
-        operations: %{add_val: {:ok, %{val: "my value"}}},
+        operations: %{add_val: "my value"},
         skipped_operations: 0,
         successful_operations: 1,
         total_operations: 1
@@ -47,25 +49,25 @@ defmodule Treeprit do
     treeprit =
       try do
         result = func.(treeprit.operations)
-        successful_result(treeprit, name, result)
+        parse_result(treeprit, name, result)
       rescue
-        error -> failed_result(treeprit, name, error)
+        error -> parse_result(treeprit, name, {:error, error})
       end
 
     treeprit
     |> increment_total_operations()
   end
 
-  defp successful_result(treeprit, name, result) do
+  defp parse_result(treeprit, name, {:ok, result}) do
     treeprit
     |> increment_successful_operations()
-    |> add_operation(name, {:ok, result})
+    |> add_operation(name, result)
   end
 
-  defp failed_result(treeprit, name, result) do
+  defp parse_result(treeprit, name, {:error, error}) do
     treeprit
     |> increment_failed_operations()
-    |> add_operation(name, {:error, result})
+    |> add_error(name, error)
   end
 
   defp increment_total_operations(treeprit) do
@@ -83,5 +85,10 @@ defmodule Treeprit do
   defp add_operation(treeprit, name, operation) do
     new_operation = Map.new() |> Map.put(name, operation)
     %{treeprit | operations: Map.merge(treeprit.operations, new_operation)}
+  end
+
+  defp add_error(treeprit, name, error) do
+    new_error = Map.new() |> Map.put(name, error)
+    %{treeprit | errors: Map.merge(treeprit.errors, new_error)}
   end
 end
