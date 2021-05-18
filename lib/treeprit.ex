@@ -47,7 +47,7 @@ defmodule Treeprit do
   """
   @spec run(%Treeprit{}, atom(), atom() | function()) :: %Treeprit{}
   def run(treeprit, name, module) when is_atom(name) and is_atom(module) do
-    behavior = Treeprit.Repo.Seeds.User.module_info()[:attributes][:behaviour]
+    behavior = module.module_info()[:attributes][:behaviour]
 
     unless behavior != nil and Enum.member?(behavior, Treeprit.ScriptBehaviour) do
       raise "Module #{inspect(module)} must implement the ScriptBehavior to be used"
