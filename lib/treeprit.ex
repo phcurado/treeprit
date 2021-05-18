@@ -36,20 +36,7 @@ defmodule Treeprit do
   def new, do: %__MODULE__{}
 
   @doc """
-  Run your operation
-
-  ## Examples
-
-      iex> Treeprit.new() |> Treeprit.run(:add_val, fn _ -> {:ok, "my value"} end) |> Treeprit.finally()
-      %Treeprit{
-        failed_operations: 0,
-        names: #MapSet<[:add_val]>,
-        results: %{add_val: "my value"},
-        skipped_operations: 0,
-        successful_operations: 1,
-        total_operations: 1
-      }
-
+  Add operation to Treeprit
   """
   @spec run(%Treeprit{}, atom(), atom() | function()) :: %Treeprit{}
   def run(treeprit, name, module) when is_atom(name) and is_atom(module) do
@@ -77,7 +64,7 @@ defmodule Treeprit do
 
   defp exec(treeprit, {name, func}) do
     try do
-      result = func.(treeprit.operations)
+      result = func.(treeprit.results)
       parse_result(treeprit, name, result)
     rescue
       error -> parse_result(treeprit, name, {:error, error})

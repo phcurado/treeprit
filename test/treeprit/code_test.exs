@@ -21,14 +21,24 @@ defmodule Treeprit.CodeTest do
       |> Treeprit.run(:test, ExampleWithBehavior)
       |> Treeprit.finally()
 
-    assert result == %Treeprit{
-             results: %{
-               test: "testing"
-             },
-             successful_operations: 1,
-             failed_operations: 0,
-             total_operations: 1
-           }
+    %Treeprit{
+      results: results,
+      names: names,
+      errors: errors,
+      successful_operations: successful_operations,
+      failed_operations: failed_operations,
+      total_operations: total_operations
+    } = result
+
+    assert results == %{test: "testing"}
+
+    assert MapSet.equal?(MapSet.new([:test]), names)
+
+    assert errors == %{}
+
+    assert successful_operations == 1
+    assert failed_operations == 0
+    assert total_operations == 1
   end
 
   test "Test module behavior function" do

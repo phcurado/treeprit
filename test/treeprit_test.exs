@@ -14,20 +14,31 @@ defmodule TreepritTest do
       |> Treeprit.run(:fifth, fn _ -> {:error, :not_found} end)
       |> Treeprit.finally()
 
-    assert result == %Treeprit{
-             results: %{
-               first: 1,
-               second: 2,
-               third: 3
-             },
-             errors: %{
-               fourth: %RuntimeError{message: "random error"},
-               fifth: :not_found
-             },
-             successful_operations: 3,
-             failed_operations: 2,
-             total_operations: 5
+    %Treeprit{
+      results: results,
+      names: names,
+      errors: errors,
+      successful_operations: successful_operations,
+      failed_operations: failed_operations,
+      total_operations: total_operations
+    } = result
+
+    assert results == %{
+             first: 1,
+             second: 2,
+             third: 3
            }
+
+    assert MapSet.equal?(MapSet.new([:first, :second, :third, :fourth, :fifth]), names)
+
+    assert errors == %{
+             fourth: %RuntimeError{message: "random error"},
+             fifth: :not_found
+           }
+
+    assert successful_operations == 3
+    assert failed_operations == 2
+    assert total_operations == 5
   end
 
   defmodule MyApp.Commands do
@@ -63,19 +74,30 @@ defmodule TreepritTest do
   end
 
   test "Test readme example" do
-    assert MyApp.Commands.run() == %Treeprit{
-             results: %{
-               first: 1,
-               second: 2,
-               third: 3
-             },
-             errors: %{
-               fourth: %RuntimeError{message: "random error"},
-               fifth: :first_or_fourth_not_available
-             },
-             successful_operations: 3,
-             failed_operations: 2,
-             total_operations: 5
+    %Treeprit{
+      results: results,
+      names: names,
+      errors: errors,
+      successful_operations: successful_operations,
+      failed_operations: failed_operations,
+      total_operations: total_operations
+    } = MyApp.Commands.run()
+
+    assert results == %{
+             first: 1,
+             second: 2,
+             third: 3
            }
+
+    assert MapSet.equal?(MapSet.new([:first, :second, :third, :fourth, :fifth]), names)
+
+    assert errors == %{
+             fourth: %RuntimeError{message: "random error"},
+             fifth: :first_or_fourth_not_available
+           }
+
+    assert successful_operations == 3
+    assert failed_operations == 2
+    assert total_operations == 5
   end
 end
