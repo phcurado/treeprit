@@ -55,6 +55,44 @@ defmodule Treeprit do
     |> increment_total_operations()
   end
 
+  @doc """
+  Run if satisfy a condition
+  """
+  @spec run_if(%Treeprit{}, atom(), atom() | function(), boolean()) :: %Treeprit{}
+  def run_if(treeprit, name, module_or_func, condition) do
+    if condition == true do
+      run(treeprit, name, module_or_func)
+    else
+      treeprit =
+        treeprit
+        |> increment_total_operations()
+        |> increment_skipped_operations()
+
+      %{
+        treeprit
+        | names: MapSet.put(treeprit.names, name)
+      }
+    end
+  end
+
+  @doc """
+  Run if environment satisfy the condition
+  """
+  @spec run_if_env(%Treeprit{}, atom(), atom() | function(), list(atom()) | atom()) :: %Treeprit{}
+  def run_if_env(treeprit, name, module_or_func, envs) when is_list(envs) do
+    app = Application.fetch_env!(:treeprit, :app)
+    env = Application.fetch_env!(app, :env)
+
+    run_if(treeprit, name, module_or_func, env in envs)
+  end
+
+  def run_if_env(treeprit, name, module_or_func, envs) when is_atom(envs) do
+    app = Application.fetch_env!(:treeprit, :app)
+    env = Application.fetch_env!(app, :env)
+
+    run_if(treeprit, name, module_or_func, env == envs)
+  end
+
   def finally(treeprit) do
     treeprit.operations
     |> Enum.reduce(treeprit, fn operation, acc ->
@@ -93,6 +131,10 @@ defmodule Treeprit do
 
   defp increment_failed_operations(treeprit) do
     %{treeprit | failed_operations: treeprit.failed_operations + 1}
+  end
+
+  defp increment_skipped_operations(treeprit) do
+    %{treeprit | skipped_operations: treeprit.skipped_operations + 1}
   end
 
   defp add_operation(treeprit, name, operation) do

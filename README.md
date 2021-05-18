@@ -11,6 +11,7 @@ defmodule MyApp.Commands do
     |> Treeprit.run(:third, &sum_first_and_second_value/1)
     |> Treeprit.run(:fourth, fn _ -> raise "random error" end)
     |> Treeprit.run(:fifth, &sum_first_and_fourth_value/1)
+    |> Treeprit.finally()
   end
 
   # This function will always pattern match because :first and :second runners has these return values

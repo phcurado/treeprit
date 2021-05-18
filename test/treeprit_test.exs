@@ -12,6 +12,10 @@ defmodule TreepritTest do
       end)
       |> Treeprit.run(:fourth, fn _ -> raise "random error" end)
       |> Treeprit.run(:fifth, fn _ -> {:error, :not_found} end)
+      |> Treeprit.run_if(:sixth, fn _ -> {:ok, "skipped"} end, false)
+      |> Treeprit.run_if(:seventh, fn _ -> {:ok, "not skipped"} end, true)
+      |> Treeprit.run_if_env(:eighth, fn _ -> {:ok, "not skipped by env"} end, [:dev, :test])
+      |> Treeprit.run_if_env(:ninth, fn _ -> {:ok, "skipped by env"} end, :dev)
       |> Treeprit.finally()
 
     %Treeprit{
@@ -20,25 +24,42 @@ defmodule TreepritTest do
       errors: errors,
       successful_operations: successful_operations,
       failed_operations: failed_operations,
-      total_operations: total_operations
+      total_operations: total_operations,
+      skipped_operations: skipped_operations
     } = result
 
     assert results == %{
              first: 1,
              second: 2,
-             third: 3
+             third: 3,
+             seventh: "not skipped",
+             eighth: "not skipped by env"
            }
 
-    assert MapSet.equal?(MapSet.new([:first, :second, :third, :fourth, :fifth]), names)
+    assert MapSet.equal?(
+             MapSet.new([
+               :first,
+               :second,
+               :third,
+               :fourth,
+               :fifth,
+               :sixth,
+               :seventh,
+               :eighth,
+               :ninth
+             ]),
+             names
+           )
 
     assert errors == %{
              fourth: %RuntimeError{message: "random error"},
              fifth: :not_found
            }
 
-    assert successful_operations == 3
+    assert successful_operations == 5
     assert failed_operations == 2
-    assert total_operations == 5
+    assert total_operations == 9
+    assert skipped_operations == 2
   end
 
   defmodule MyApp.Commands do
