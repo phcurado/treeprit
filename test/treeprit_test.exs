@@ -12,9 +12,10 @@ defmodule TreepritTest do
       end)
       |> Treeprit.run(:fourth, fn _ -> raise "random error" end)
       |> Treeprit.run(:fifth, fn _ -> {:error, :not_found} end)
+      |> Treeprit.finally()
 
     assert result == %Treeprit{
-             operations: %{
+             results: %{
                first: 1,
                second: 2,
                third: 3
@@ -37,6 +38,7 @@ defmodule TreepritTest do
       |> Treeprit.run(:third, &sum_first_and_second_value/1)
       |> Treeprit.run(:fourth, fn _ -> raise "random error" end)
       |> Treeprit.run(:fifth, &sum_first_and_fourth_value/1)
+      |> Treeprit.finally()
     end
 
     # This function will always pattern match because :first and :second runners has these return values
@@ -62,7 +64,7 @@ defmodule TreepritTest do
 
   test "Test readme example" do
     assert MyApp.Commands.run() == %Treeprit{
-             operations: %{
+             results: %{
                first: 1,
                second: 2,
                third: 3

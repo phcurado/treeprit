@@ -19,9 +19,10 @@ defmodule Treeprit.CodeTest do
     result =
       Treeprit.new()
       |> Treeprit.run(:test, ExampleWithBehavior)
+      |> Treeprit.finally()
 
     assert result == %Treeprit{
-             operations: %{
+             results: %{
                test: "testing"
              },
              successful_operations: 1,
@@ -36,6 +37,7 @@ defmodule Treeprit.CodeTest do
                  fn ->
                    Treeprit.new()
                    |> Treeprit.run(:test, ExampleWithoutBehavior)
+                   |> Treeprit.finally()
                  end
   end
 end
