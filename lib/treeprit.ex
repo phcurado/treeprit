@@ -173,16 +173,12 @@ defmodule Treeprit do
   """
   @spec run_if_env(%Treeprit{}, atom(), atom() | function(), list(atom()) | atom()) :: %Treeprit{}
   def run_if_env(treeprit, name, module_or_func, envs) when is_list(envs) do
-    app = Application.fetch_env!(:treeprit, :app)
-    env = Application.fetch_env!(app, :env)
-
+    env = Application.fetch_env!(:treeprit, :env)
     run_if(treeprit, name, module_or_func, env in envs)
   end
 
   def run_if_env(treeprit, name, module_or_func, envs) when is_atom(envs) do
-    app = Application.fetch_env!(:treeprit, :app)
-    env = Application.fetch_env!(app, :env)
-
+    env = Application.fetch_env!(:treeprit, :env)
     run_if(treeprit, name, module_or_func, env == envs)
   end
 
