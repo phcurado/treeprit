@@ -54,6 +54,8 @@ defmodule Treeprit do
       }
   """
 
+  require Logger
+
   @type t :: %__MODULE__{
           total_operations: integer(),
           skipped_operations: integer(),
@@ -61,7 +63,7 @@ defmodule Treeprit do
           failed_operations: integer(),
           names: MapSet.t(),
           results: map(),
-          operations: map(),
+          operations: list(),
           errors: map()
         }
 
@@ -71,7 +73,7 @@ defmodule Treeprit do
             failed_operations: 0,
             names: MapSet.new(),
             results: Map.new(),
-            operations: Map.new(),
+            operations: [],
             errors: Map.new()
 
   @doc """
@@ -205,6 +207,8 @@ defmodule Treeprit do
   end
 
   defp parse_result(treeprit, name, {:error, error}) do
+    Logger.info("operation #{name} returned the error #{inspect(error)}")
+
     treeprit
     |> increment_failed_operations()
     |> add_error(name, error)
@@ -227,12 +231,10 @@ defmodule Treeprit do
   end
 
   defp add_operation(treeprit, name, operation) do
-    new_operation = Map.new() |> Map.put(name, operation)
-
     %{
       treeprit
       | names: MapSet.put(treeprit.names, name),
-        operations: Map.merge(treeprit.operations, new_operation)
+        operations: treeprit.operations ++ [{name, operation}]
     }
   end
 
