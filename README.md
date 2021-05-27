@@ -68,7 +68,7 @@ def deps do
 end
 ```
 
-## Usege
+## Usage
 
 A great example for this library usage is the common `seed.exs` in Ecto projects. If you need a more structured way for running seeds, you can use this package and organize them with modules. Take a look at [this](priv/repo) example.
 
