@@ -1,6 +1,6 @@
 defmodule Treeprit.ScriptBehaviour do
   @doc """
-  Function to run the script
+  Behavior for running your scripts
   """
   @callback run(map()) :: {:ok, term()} | {:error, String.t()} | :throw
 end

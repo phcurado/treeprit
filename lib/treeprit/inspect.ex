@@ -4,8 +4,9 @@ defimpl Inspect, for: Treeprit do
     #Treeprit{
       results: #{inspect(val.results)},
       errors: #{inspect(val.errors)},
-      skipped_operations: #{val.skipped_operations},
       successful_operations: #{val.successful_operations},
+      failed_operations: #{val.failed_operations},
+      skipped_operations: #{val.skipped_operations},
       total_operations: #{val.total_operations}
     }
     """

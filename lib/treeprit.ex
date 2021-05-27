@@ -1,6 +1,57 @@
 defmodule Treeprit do
   @moduledoc """
-  Documentation for `Treeprit`.
+  Treeprit will help you organize functions that need to run sequentially. A great example is the common `seed.exs` in Ecto projects.
+
+  ## Examples
+      defmodule MyApp.Commands do
+        def run() do
+          Treeprit.new()
+          |> Treeprit.run(:first, fn _ -> {:ok, 1} end)
+          |> Treeprit.run(:second, fn _ -> {:ok, 2} end)
+          |> Treeprit.run(:third, &sum_first_and_second_value/1)
+          |> Treeprit.run(:fourth, fn _ -> raise "random error" end)
+          |> Treeprit.run(:fifth, &sum_first_and_fourth_value/1)
+          |> Treeprit.finally()
+        end
+
+        # This function will always pattern match because :first and :second runners has these return values
+        defp sum_first_and_second_value(%{first: first_value, second: second_value}) do
+          {:ok, first_value + second_value}
+        end
+
+        # This will not match because :first and :second is always returning {:ok, value}
+        defp sum_first_and_second_value(_not_ok) do
+          {:error, :first_or_second_not_available}
+        end
+
+        # This will not match because :fourth is throwing an error, so it will never pattern match with fourth atom inside the map
+        defp sum_first_and_fourth_value(%{first: first_value, fourth: fourth_value}) do
+          {:ok, first_value + fourth_value}
+        end
+
+        # This will match
+        defp sum_first_and_fourth_value(_not_ok) do
+          {:error, :first_or_fourth_not_available}
+        end
+      end
+
+    Then when you try to run this module on your shell, you will have the given results:
+
+      iex> MyApp.Commands.run()
+      %Treeprit{
+        results: %{
+          first: 1,
+          second: 2,
+          third: 3
+        },
+        errors: %{
+          fourth: %RuntimeError{message: "random error"},
+          fifth: :first_or_fourth_not_available
+        },
+        successful_operations: 3,
+        failed_operations: 2,
+        total_operations: 5
+      }
   """
 
   @type t :: %__MODULE__{
@@ -37,6 +88,20 @@ defmodule Treeprit do
 
   @doc """
   Add operation to Treeprit
+
+  ## Examples
+      iex> Treeprit.new() |> Treeprit.run(:first, fn _ -> {:ok, "run me"} end) |> Treeprit.finally()
+      %Treeprit{
+        results: %{
+          second: "run me",
+        },
+        errors: %{},
+        successful_operations: 1,
+        failed_operations: 0,
+        skipped_operations: 1,
+        total_operations: 2
+      }
+
   """
   @spec run(%Treeprit{}, atom(), atom() | function()) :: %Treeprit{}
   def run(treeprit, name, module) when is_atom(name) and is_atom(module) do
@@ -57,6 +122,20 @@ defmodule Treeprit do
 
   @doc """
   Run if satisfy a condition
+  ## Examples
+
+      iex> Treeprit.new() |> Treeprit.run_if(:first, fn _ -> {:ok, "skipped"} end, false) |> Treeprit.run_if(:second, fn _ -> {:ok, "not skipped"} end, true) |> Treeprit.finally()
+      %Treeprit{
+        results: %{
+          second: "not skipped",
+        },
+        errors: %{},
+        successful_operations: 1,
+        failed_operations: 0,
+        skipped_operations: 1,
+        total_operations: 2
+      }
+
   """
   @spec run_if(%Treeprit{}, atom(), atom() | function(), boolean()) :: %Treeprit{}
   def run_if(treeprit, name, module_or_func, condition) do
@@ -77,6 +156,20 @@ defmodule Treeprit do
 
   @doc """
   Run if environment satisfy the condition
+  ## Examples
+
+      iex> Treeprit.new() |> Treeprit.run_if_env(:first, fn _ -> {:ok, "dev_env"} end, [:dev]) |> Treeprit.finally()
+      %Treeprit{
+        results: %{
+          first: "dev_env",
+        },
+        errors: %{},
+        successful_operations: 1,
+        failed_operations: 0,
+        skipped_operations: 0,
+        total_operations: 1
+      }
+
   """
   @spec run_if_env(%Treeprit{}, atom(), atom() | function(), list(atom()) | atom()) :: %Treeprit{}
   def run_if_env(treeprit, name, module_or_func, envs) when is_list(envs) do

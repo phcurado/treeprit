@@ -1,6 +1,5 @@
 defmodule TreepritTest do
   use ExUnit.Case
-  doctest Treeprit
 
   test "Run functions" do
     result =

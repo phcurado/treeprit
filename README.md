@@ -1,6 +1,6 @@
 # Treeprit
 
-Treeprit helps you run sequentially commands that may or may not fail during the process. Here is an example:
+Treeprit helps you run sequentially commands that may or may not fail during the process.
 
 ```Elixir
 defmodule MyApp.Commands do
@@ -41,7 +41,7 @@ Then when you try to run this module on your shell, you will have the given resu
 ```Elixir
 iex> MyApp.Commands.run()
 %Treeprit{
-  operations: %{
+  results: %{
     first: 1,
     second: 2,
     third: 3
@@ -58,18 +58,18 @@ iex> MyApp.Commands.run()
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `treeprit` to your list of dependencies in `mix.exs`:
+Add this project to your dependencies
 
-```elixir
+```Elixir
 def deps do
   [
-    {:treeprit, "~> 0.1.0"}
+    {:treeprit, "~> 0.1"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/treeprit](https://hexdocs.pm/treeprit).
+## Usege
+
+A great example for this library usage is the common `seed.exs` in Ecto projects. If you need a more structured way for running seeds, you can use this package and organize them with modules. Take a look at [this](priv/repo) example.
+
 
